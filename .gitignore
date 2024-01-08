@@ -18,3 +18,7 @@ Thumbs.db
 # output folder (you may want to exclude files when we publish!)
 /out/*
 !/out
+
+# raw data files
+/data/bedmap2/bedmap2_tiff/*
+/data/bedmap2.zip
