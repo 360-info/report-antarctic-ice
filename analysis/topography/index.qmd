@@ -38,6 +38,7 @@ download_if_not_present <- function(url, dest_zip, dest_dir,
 # bedmap2:
 # - https://tc.copernicus.org/articles/7/375/2013/tc-7-375-2013.html
 # - https://secure.antarctica.ac.uk/data/bedmap2/
+# - readme: https://secure.antarctica.ac.uk/data/bedmap2/bedmap2_readme.txt
 download_if_not_present(
   "https://secure.antarctica.ac.uk/data/bedmap2/bedmap2_tiff.zip",
   here("data", "bedmap2.zip"),
@@ -47,10 +48,10 @@ download_if_not_present(
 We want to load these GeoTIFFs in to the browser, but they're way too big for users to download. Let's resample them to make smaller files:
 
 ```{r}
-#| label: resample-sf
+#| label: process-tiffs
 
 # load a GeoTIFF, shrink it and write the smaller version out
-shrink_and_write <- function(x) {
+shrink_raster <- function(x) {
   here("data", "bedmap2", "bedmap2_tiff", paste0("bedmap2_", x, ".tif")) |>
     rast() |>
     aggregate(fact = 12, fun = "mean") |>
@@ -59,6 +60,24 @@ shrink_and_write <- function(x) {
       overwrite = TRUE)
 }
 
-c("thickness", "surface", "bed") |> walk(shrink_and_write)
+get_outlines <- function(x, height) {
+  here("data", "bedmap2", "bedmap2_tiff", paste0("bedmap2_", x, ".tif")) |>
+    rast() |>
+    (\(x)(x >= height))() |>
+    as.polygons() |>
+    subset(TRUE) |>
+    project("epsg:4326") |>
+    writeVector(
+      here("data", "bedmap2", paste0("bedmap2_", x, "_outline.geojson")),
+      filetype = "GeoJSON",
+      overwrite = TRUE)
+}
 
+# run the above operations on our tiffs
+c("surface", "bed", "thickness") |> walk(shrink_raster)
+c("surface", "bed") |> walk2(c(1, 0), get_outlines)
 ```
+
+:::{.callout-note}
+Note that our GeoJSON outlines are _right-handed_, which most tools expect. But D3.js [requires _left-handed polygons](https://gis.stackexchange.com/questions/392452/why-d3-js-works-only-with-geojson-violating-right-hand-rule), so we'll need to use turf.js to fix them in the browser.
+:::
