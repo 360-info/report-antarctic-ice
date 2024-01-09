@@ -16,6 +16,7 @@ code-fold: true
 library(tidyverse)
 library(sf)
 library(terra)
+library(isoband)
 library(here)
 ```
 
@@ -55,11 +56,13 @@ shrink_raster <- function(x) {
   here("data", "bedmap2", "bedmap2_tiff", paste0("bedmap2_", x, ".tif")) |>
     rast() |>
     aggregate(fact = 12, fun = "mean") |>
+    # project("epsg:4326", method = "average") |>
     writeRaster(
       here("data", "bedmap2", paste0("bedmap2_", x, "_small.tif")),
       overwrite = TRUE)
 }
 
+# load a tiff, extract portion from specified height up, and write out as polys
 get_outlines <- function(x, height) {
   here("data", "bedmap2", "bedmap2_tiff", paste0("bedmap2_", x, ".tif")) |>
     rast() |>
@@ -75,9 +78,45 @@ get_outlines <- function(x, height) {
 
 # run the above operations on our tiffs
 c("surface", "bed", "thickness") |> walk(shrink_raster)
-c("surface", "bed") |> walk2(c(1, 0), get_outlines)
+"surface" |> walk2(0, get_outlines)
+
+# run off height levels at geojson vectors with {isoband} (cheers @mdsumner:
+# https://gist.github.com/mdsumner/53fc623ae740e02acc53fb923bf36128)
+isoband_terra_sf <- function(x, lo, hi, auto = FALSE) {
+  if (auto) {
+    breaks <- pretty(values(x), 10)
+    lo <- head(breaks, -1)
+    hi <- tail(breaks, -1)
+  }
+  ## OMG: note the [[1]] and wide = TRUE which is also weird but different
+  # to raster ...
+  b <- isoband::isobands(
+    xFromCol(x),
+    yFromRow(x),
+    as.matrix(x[[1]],
+    wide = TRUE),
+    levels_low = lo,
+    levels_hi = hi)
+  sf::st_sf(
+    lo = lo,
+    hi = hi,
+    geometry = sf::st_sfc(isoband::iso_to_sfg(b), crs = crs(x)))
+}
+
+here("data", "bedmap2", "bedmap2_tiff", paste0("bedmap2_bed.tif")) |>
+  rast() |>
+  aggregate(fact = 12, fun = "mean") |>
+  (\(x)(x %/% 100 * 100))() |>
+  isoband_terra_sf(auto = TRUE) ->
+bed_heights
+
+bed_heights |>
+  st_transform(st_crs(4326)) |>
+  write_sf(
+    here("data", "bedmap2", paste0("bedmap2_bed_heights.geojson")),
+    delete_dsn = TRUE)
 ```
 
 :::{.callout-note}
-Note that our GeoJSON outlines are _right-handed_, which most tools expect. But D3.js [requires _left-handed polygons](https://gis.stackexchange.com/questions/392452/why-d3-js-works-only-with-geojson-violating-right-hand-rule), so we'll need to use turf.js to fix them in the browser.
+Note that `{isoband}` produces _left-handed_ polygons, which is [great for D3.js](https://gis.stackexchange.com/questions/392452/why-d3-js-works-only-with-geojson-violating-right-hand-rule) but might confuse some other tools.
 :::

@@ -36,10 +36,11 @@ format:
 // https://observablehq.com/@neocartocnrs/display-and-project-a-geotiff-with-plot -->
 
 ```{ojs}
-//| label: winding-fix
-turf = require("@turf/turf")
+//| label: load-data
+turf = require("@turf/turf@6.5.0")
 FA = FileAttachment
 
+// use turf.js to make the geojson winding order compatible with d3.js
 async function fixedGeoJSON(x) {
   const raw = await FA(x).json()
   console.log("Raw " + x + ":", raw)
@@ -49,27 +50,54 @@ async function fixedGeoJSON(x) {
   return raw
 }
 
-bedOutline = fixedGeoJSON("/data/bedmap2/bedmap2_bed_outline.geojson")
+// bedHeights = fixedGeoJSON("/data/bedmap2/bedmap2_bed_heights.geojson")
+bedHeights = FA("/data/bedmap2/bedmap2_bed_heights.geojson").json()
+// landIceOutline = fixedGeoJSON("/data/bedmap2/bedmap2_surface_outline.geojson")
 
-landIceOutline = fixedGeoJSON("/data/bedmap2/bedmap2_surface_outline.geojson")
 ```
+
+
 
 ```{ojs}
 //| label: map
 
 Plot.plot({
+  // projection: "equal-earth",
+  // projection: {type: "orthographic", rotate: [0, -30, 20]},
   projection: ({width, height}) => d3.geoAzimuthalEquidistant()
     .rotate([0, 90])
     .translate([width / 2, height / 2])
-    .scale(width / 1.2)
+    .scale(width / 1.05)
     .clipAngle(40),
-  r: {transform: (d) => Math.pow(10, d)}, // convert Richter to amplitude
+  color: {
+    type: "ordinal",
+    range: [
+        "#084594",
+        "#2171b5",
+        "#4292c6",
+        "#6baed6",
+        "#9ecae1",
+        "#c6dbef",
+        "#eff3ff",
+        "#fe9929",
+        "#ec7014",
+        "#cc4c02",
+        "#993404"
+        ],
+    label: "Height or depth (m)",
+    legend: true
+  },
   marks: [
-    Plot.geo(bedOutline, {fill: "#ffaa66", stroke: "#dd0000", fillOpacity: 0.2}),
-    Plot.geo(landIceOutline, {fill: "#66aaff", stroke: "#333333", fillOpacity: 0.2}),
-    Plot.graticule(),
-    Plot.sphere(),
-  ]
+    Plot.geo(bedHeights, {
+      fill: d => d.properties.hi,
+      fillOpacity: 0.75,
+      stroke: null
+    }),
+    // Plot.geo(landIceOutline, {stroke: "#333333", fillOpacity: 0.2}),
+    // Plot.graticule(),
+    // Plot.sphere(),
+  ],
+  height: 650
 })
 ```
 
