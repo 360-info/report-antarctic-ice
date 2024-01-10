@@ -240,8 +240,8 @@ labelContinents = [
 // this render transform fades layers in (but not out)
 fadeLayerIn = (i, s, v, d, c, next) => {
   const marks = next(i, s, v, d, c)
-  const markSelection = d3.select(marks)
-  markSelection
+  d3
+    .select(marks)
     .style("opacity", 0)
     .transition()
     .duration(750)
