@@ -59,7 +59,7 @@ We want to load these GeoTIFFs in to the browser, but they're way too big for us
 shrink_raster <- function(x) {
   here("data", "bedmap2", "bedmap2_tiff", paste0("bedmap2_", x, ".tif")) |>
     rast() |>
-    aggregate(fact = 12, fun = "mean") |>
+    aggregate(fact = 15, fun = "mean") |>
     # project("epsg:4326", method = "average") |>
     writeRaster(
       here("data", "bedmap2", paste0("bedmap2_", x, "_small.tif")),
@@ -109,7 +109,7 @@ isoband_terra_sf <- function(x, lo, hi, auto = FALSE) {
 
 here("data", "bedmap2", "bedmap2_tiff", paste0("bedmap2_bed.tif")) |>
   rast() |>
-  aggregate(fact = 12, fun = "mean") |>
+  aggregate(fact = 15, fun = "mean") |>
   (\(x)(x %/% 100 * 100))() |>
   isoband_terra_sf(auto = TRUE) ->
 bed_heights

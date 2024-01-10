@@ -22,3 +22,5 @@ Thumbs.db
 # raw data files
 /data/bedmap2/bedmap2_tiff/*
 /data/bedmap2.zip
+/data/nsidc/*/
+/data/nsidc/*.zip
