@@ -122,7 +122,7 @@ header#title-block-header p {
 #map figure {
   margin-inline-start: 0.1em;
   margin-inline-end: 0.1em;
-  margin-block-start: 0.3em;
+  margin-block-start: 1.5em;
 
   /* quick way to get the legend on the bottom and figure + legend centred */
   display: flex;
@@ -188,7 +188,6 @@ header#title-block-header p {
 
 .commentary {
   font-weight: bold;
-  text-align: center;
   font-size: clamp(1em, 3.5vw, 1.5em);
   text-shadow:
     0 0 1px white,

@@ -157,14 +157,15 @@ Plot.plot({
       fontFamily: "Roboto Condensed",
       fontStyle: "italic"
     }),
-    storyStep >= 2 ? Plot.geo(landIceOutline, {
+    storyStep >= 1 ? Plot.geo(landIceOutline, {
       fill: "url(#stripes)",
       stroke: "#333333",
+      strokeWidth: 1.5,
       fillOpacity: 0.75,
       render: fadeLayerIn
     }) : null,
     // Plot.graticule()
-    storyStep >= 3 ? Plot.arrow(labelShelves, {
+    storyStep >= 2 ? Plot.arrow(labelShelves, {
       x1: "xfrom",
       y1: "yfrom",
       x2: "xto",
@@ -174,11 +175,11 @@ Plot.plot({
       strokeWidth: 3,
       render: fadeLayerIn
     }) : null,
-    storyStep == 3 ? Plot.text(labelShelves,
+    storyStep == 2 ? Plot.text(labelShelves,
       {
         text: d => d.t.toUpperCase(),
         x: "xfrom",
-        y: d => d.yfrom + 2.5, // shift labels outward
+        y: d => d.yfrom + 2.5, // shift labels outward, not up/down
         stroke: "lightcyan",
         fill: "navy",
         strokeWidth: 4,
