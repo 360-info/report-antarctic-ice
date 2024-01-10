@@ -16,7 +16,11 @@ a:visited {
 header#title-block-header {
   
   color: black;
-  text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+  text-shadow:
+    0 0 1px white,
+    0 0 2px white,
+    0 0 3px white,
+    0 0 4px white;
   font-weight: bold;
   
   /* uncomment following for an inset header */
@@ -118,6 +122,32 @@ header#title-block-header p {
 #map figure {
   margin-inline-start: 0.1em;
   margin-inline-end: 0.1em;
+  margin-block-start: 0.3em;
+
+  /* quick way to get the legend on the bottom and figure + legend centred */
+  display: flex;
+  flex-flow: column-reverse;
+  align-items: center;
+}
+
+/* push the map further down on mobile */
+
+@media (min-width: 351px) and (max-width: 450px) {
+  #map figure {
+    margin-block-start: 3em;
+  }
+}
+
+@media (min-width: 271px) and (max-width: 350px) {
+  #map figure {
+    margin-block-start: 5em;
+  }
+}
+
+@media (max-width: 270px) {
+  #map figure {
+    margin-block-start: 6.5em;
+  }
 }
 
 /* legend: fake a binned colour bar */
@@ -126,8 +156,8 @@ header#title-block-header p {
   justify-content: center;
 }
 
-.plot-d6a7b5-swatches::before {
-  content: 'Height (m)';
+#map figure::before {
+  content: 'Height (km)';
   font-family: "Roboto Condensed";
   font-size: 13px;
   font-weight: bold;
@@ -145,4 +175,76 @@ header#title-block-header p {
 .plot-d6a7b5-swatches span.plot-d6a7b5-swatch > svg {
   margin-left: -100%;
   margin-right: 0;
+}
+
+/* commentary + buttons */
+.header-block {
+  position: absolute;
+  display: flex;
+  flex-flow: row nowrap;
+  padding: 10px 20px;
+  gap: 20px;
+}
+
+.commentary {
+  font-weight: bold;
+  text-align: center;
+  font-size: clamp(1em, 3.5vw, 1.5em);
+  text-shadow:
+    0 0 1px white,
+    0 0 2px white,
+    0 0 3px white,
+    0 0 4px white;
+}
+
+.commentary p {
+  margin-block: 0;
+}
+
+.commentary p + p {
+  margin-block-start: 1em;
+}
+
+/* back/forward buttons */
+#advance-buttons form {
+  flex-flow: column;
+  width: 100%;
+  margin-block-start: 0;
+  font-size: clamp(40%, 1.5vw, 80%);
+}
+
+#advance-buttons button {
+  border: none;
+  width: 2em;
+  height: 2em;
+  font-size: 3em;
+  background-color: #222222;
+  color: white;
+  border-radius: 50%;
+  box-shadow: 0 10px 15px -10px grey;
+}
+
+#advance-buttons button:disabled,
+#advance-buttons button:first-child:hover:disabled,
+#advance-buttons button:first-child:focus:disabled {
+  background-color: lightgrey;
+  color: grey;
+}
+
+#advance-buttons button:first-child {
+  margin: 0 5px 20px 5px;
+}
+
+#advance-buttons button:first-child:hover,
+#advance-buttons button:first-child:focus {
+  background-color: #333333;
+}
+
+#advance-buttons button:last-child {
+  font-size: 2em;
+  background-color: transparent;
+  box-shadow: none;
+  color: black;
+  margin-top: -0.3em;
+  /* margin-left: -0.1em;  */
 }

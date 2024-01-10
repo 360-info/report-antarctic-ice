@@ -114,19 +114,27 @@
   
   float: right;
   position: absolute;
-  top: 0;
+  bottom: 0;
   right: 0;
   display: flex;
   flex-flow: column;
   align-items: end;
   gap: 0.25rem;
 
-  font-size: 80%;
+  font-size: 90%;
 
   /* to maintain readability over a map */
   z-index: 1000;
   text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
   font-weight: bold;
+}
+
+/* shift modalpanel down on mobile to clear colour scale */
+@media (max-width: 250px) {
+  .modalpanel {
+    top: 4em;
+    font-size: 80%;
+  }
 }
 
 .modalpanelitems {
@@ -135,6 +143,7 @@
   flex-flow: row;
   justify-content: end;
   gap: 0.75rem;
+  margin-bottom: 0.5rem;
 }
 
 .modalpanel p {

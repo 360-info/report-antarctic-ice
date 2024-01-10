@@ -16,8 +16,8 @@ format:
   360-embed-html: default
 # metadata for modals and embed sharing functionality
 360embed:
-  byline: James Goldie, 360info
-  data-source: XXX
+  byline: "James Goldie, 360info"
+  data-source: "Bedmap2, NSIDC"
   type: map
   aspect-ratio: 20 / 19
   min-height: 500px
@@ -54,13 +54,60 @@ async function fixedGeoJSON(x) {
 // bedHeights = fixedGeoJSON("/data/bedmap2/bedmap2_bed_heights.geojson")
 bedHeights = FA("/data/bedmap2/bedmap2_bed_heights.geojson").json()
 landIceOutline = fixedGeoJSON("/data/bedmap2/bedmap2_surface_outline.geojson")
+```
 
+:::{.header-block}
+
+```{ojs}
+//| label: commentary
+//| classes: commentary
+comments = [
+    md`When you think of Antarctica, you probably think of its ice. But underneath is a continent, with rock rising above sea level.`,
+    md`A sheet of ice sits over nearly all of the land — kilometres thick in many places.`,
+    md`In some places, the ice also hangs over shallow waters, as a bookshelf hangs onto a wall. This is called an ice shelf.<br><br>Ross Ice Shelf and Ronne Ice Shelf are two of the biggest, but smaller ice shelves hang all around the edge of Antarctica.`,
+    md`Separate to this, ice also forms on the waters surrounding Antarctica. This sea ice grows in the winter and shrinks in the summer.`,
+]
+comments[storyStep]
 ```
 
 ```{ojs}
-//| label: inputs
-viewof showLayers = Inputs.checkbox(["Land ice", "Labels"])
+//| label: advance-buttons
+
+viewof storyStep = Inputs.button(
+  [
+    ["→",
+      value => {
+        const maxVal = comments.length;
+        if (value == maxVal - 2) {
+          console.log("Disabling button after this click", this)
+          this.disabled = true
+          document
+            .querySelector("#advance-buttons button:first-child")
+            .disabled = true
+        } else {
+          console.log("Enabling button", this)
+          document
+            .querySelector("#advance-buttons button:first-child")
+            .disabled = false
+        }
+        return value < maxVal - 1 ? value + 1 : value
+      }
+    ],
+    ["↩",
+      () => {
+        document
+          .querySelector("#advance-buttons button:first-child")
+          .disabled = false
+        return 0
+      }
+    ],
+  ], {
+    value: 0,
+    id: "storyStepsBtns"
+  })
 ```
+
+:::
 
 ```{ojs}
 //| label: map
@@ -89,14 +136,13 @@ Plot.plot({
         "#cc4c02",
         "#993404"
         ],
-    label: "Height or depth (m)",
     legend: true,
-    swatchWidth: 40
+    swatchWidth: 25
   },
   marks: [
     pattern,
     Plot.geo(bedHeights, {
-      fill: d => d.properties.hi,
+      fill: d => d.properties.hi / 1000,
       fillOpacity: 0.75,
       stroke: null,
       ariaDescription: "A map showing the elevation (or depth, where it is below sea level) of the bedrock of Antarctica. Parts of the bedrock are over two kilometres above sea level. The areas above sea level are smaller than the typical depiction of Antarctica in maps. This is because thick ice sits over the land, as well as hanging over some shallow waters as ice shelves."
@@ -111,56 +157,61 @@ Plot.plot({
       fontFamily: "Roboto Condensed",
       fontStyle: "italic"
     }),
-    showLayers.includes("Land ice") ? Plot.geo(landIceOutline, {
+    storyStep >= 2 ? Plot.geo(landIceOutline, {
       fill: "url(#stripes)",
       stroke: "#333333",
       fillOpacity: 0.75,
       render: fadeLayerIn
     }) : null,
     // Plot.graticule()
-    showLayers.includes("Labels") ? Plot.arrow(labelRoss, {
+    storyStep >= 3 ? Plot.arrow(labelShelves, {
       x1: "xfrom",
       y1: "yfrom",
       x2: "xto",
       y2: "yto",
       bend: true,
-      stroke: "black",
+      stroke: "navy",
       strokeWidth: 3,
       render: fadeLayerIn
     }) : null,
-    showLayers.includes("Labels") ? Plot.text(labelRoss,
+    storyStep == 3 ? Plot.text(labelShelves,
       {
-        text: "t",
+        text: d => d.t.toUpperCase(),
         x: "xfrom",
-        y: "yfrom",
-        stroke: "white",
-        fill: "black",
+        y: d => d.yfrom + 2.5, // shift labels outward
+        stroke: "lightcyan",
+        fill: "navy",
         strokeWidth: 4,
-        fontSize: 32,
+        fontSize: 24,
         fontFamily: "Roboto Condensed",
         fontWeight: "bold",
-        lineWidth: 25,
-        dx: 35,
-        dy: 90,
+        lineWidth: 15,
+        // dx: 35,
+        // dy: 30,
         render: fadeLayerIn
       }) : null
+    // add sea ice layer here?
   ],
   height: 800,
-  // marginTop: -50
   insetTop: 0
 })
 ```
 
 ```{ojs}
 //| label: map-labels
-
-labelRoss = [
+labelShelves = [
   { 
+    t: "Ross Ice Shelf",
     xfrom: -165.625245,
     yfrom: -70.639197,
     xto: -176.463560,
-    yto: -80.399690,
-    t: "In some places, thick ice from the land areas further south hangs over shallow waters, as a bookshelf hangs onto a wall.\n\nThese are called ice shelves."
+    yto: -80.399690
+  }, {
+    t: "Ronne Ice Shelf",
+    xfrom: -40.884332,
+    yfrom: -67.110015,
+    xto: -55.884332,
+    yto: -77.110015
   }
 ]
 
