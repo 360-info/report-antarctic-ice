@@ -20,7 +20,9 @@ library(isoband)
 library(here)
 ```
 
-If they aren't already present, we'll download the Bedmap2 topography/bathymetry grids.
+# Bedmap2: Antarctic bed and land ice heights
+
+If they aren't already present, we'll download the Bedmap2 topography/bathymetry grids, as well as the NSIC's median 1981-2010 sea ice borders for each month of the year:
 
 ```{r}
 #| label: download-bedmap2
@@ -33,7 +35,9 @@ download_if_not_present <- function(url, dest_zip, dest_dir,
     download.file(url, dest_zip)
     unzip(dest_zip, exdir = dest_dir)
     options(timeout = old_timeout)
-  } 
+  } else {
+    message("Skipping download of ", basename(url))
+  }
 }
 
 # bedmap2:
@@ -120,3 +124,55 @@ bed_heights |>
 :::{.callout-note}
 Note that `{isoband}` produces _left-handed_ polygons, which is [great for D3.js](https://gis.stackexchange.com/questions/392452/why-d3-js-works-only-with-geojson-violating-right-hand-rule) but might confuse some other tools.
 :::
+
+# NSIDC: median sea ice borders
+
+```{r}
+#| label: download-nsidc
+
+# nsidc: sea ice index
+# https://nsidc.org/data/g02135/versions/3
+# shapefiles of median:
+#   https://noaadata.apps.nsidc.org/NOAA/G02135/south/monthly/shapefiles/shp_median/
+padded_months <- 1:12 |> stringr::str_pad(2, pad = "0")
+nsidc_downloads <- tibble(
+  url = paste0(
+    "https://noaadata.apps.nsidc.org/NOAA/G02135/south/monthly/shapefiles/",
+    "shp_median/median_extent_S_",
+    padded_months,
+    "_1981-2010_polyline_v3.0.zip"),
+  dest_zip = here("data", "nsidc", paste0("seaice-", padded_months, ".zip")),
+  dest_dir = here("data", "nsidc", paste0("seaice-", padded_months)))
+
+# download all 12 files
+pwalk(nsidc_downloads, download_if_not_present)
+```
+
+These are pretty tiny, so there's no need to simplify them. Instead, let's reproject them to EPSG:4326 and write them all out as a single GeoJSON:
+
+```{r}
+#| label: process-nsidc
+
+# open all the months' boundaries in a single tibble
+nsidc_downloads |>
+  mutate(
+    month = padded_months,
+    dest_file =
+      file.path(dest_dir, basename(url)) |>
+      str_replace(".zip", ".shp"),
+    shape = map(dest_file, read_sf)) |>
+  select(month, shape) ->
+seaice_shapes
+
+# convert to sf
+seaice_shapes |>
+  unnest(shape) |>
+  st_as_sf() ->
+seaice_sf
+
+# write out as geojson
+seaice_sf |>
+  st_transform(st_crs(4326)) |>
+  write_sf(here("data", "nsidc", "seaice_median.geojson"), delete_dsn = TRUE)
+
+```
