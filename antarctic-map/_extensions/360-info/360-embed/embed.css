@@ -114,3 +114,35 @@ header#title-block-header p {
 
 }
 
+/* interactive: push closer to edges */
+#map figure {
+  margin-inline-start: 0.1em;
+  margin-inline-end: 0.1em;
+}
+
+/* legend: fake a binned colour bar */
+
+.plot-d6a7b5-swatches {
+  justify-content: center;
+}
+
+.plot-d6a7b5-swatches::before {
+  content: 'Height (m)';
+  font-family: "Roboto Condensed";
+  font-size: 13px;
+  font-weight: bold;
+  margin-right: 30px;
+}
+
+.plot-d6a7b5-swatches span.plot-d6a7b5-swatch {
+  flex-direction: column;
+  margin-right: 0;
+  font-family: "Roboto Condensed";
+  font-size: 13px;
+  gap: 3px;
+}
+
+.plot-d6a7b5-swatches span.plot-d6a7b5-swatch > svg {
+  margin-left: -100%;
+  margin-right: 0;
+}
