@@ -44,7 +44,6 @@ FA = FileAttachment
 // use turf.js to make the geojson winding order compatible with d3.js
 async function fixedGeoJSON(x) {
   const raw = await FA(x).json()
-  console.log("Raw " + x + ":", raw)
   raw.features = raw.features.map(function(f) {
     return turf.rewind(f, { reverse:true });
   })
@@ -54,7 +53,15 @@ async function fixedGeoJSON(x) {
 // bedHeights = fixedGeoJSON("/data/bedmap2/bedmap2_bed_heights.geojson")
 bedHeights = FA("/data/bedmap2/bedmap2_bed_heights.geojson").json()
 landIceOutline = fixedGeoJSON("/data/bedmap2/bedmap2_surface_outline.geojson")
-seaIceOutline = fixedGeoJSON("/data/nsidc/seaice_median.geojson")
+// seaIceOutline = fixedGeoJSON("/data/nsidc/seaice_median.geojson")
+seaIceRegions = FA("/data/nsidc/seaice_median_hulls.geojson").json()
+
+// filter the sea ice regions on a timer
+currentSeaIceRegion = ({
+  ...seaIceRegions,
+  features: seaIceRegions.features.filter(
+      d => parseInt(d.properties.month) == monthTimer + 1)
+})
 ```
 
 :::{.header-block}
@@ -80,13 +87,13 @@ viewof storyStep = Inputs.button(
       value => {
         const maxVal = comments.length;
         if (value == maxVal - 2) {
-          console.log("Disabling button after this click", this)
+          // console.log("Disabling button after this click", this)
           this.disabled = true
           document
             .querySelector("#advance-buttons button:first-child")
             .disabled = true
         } else {
-          console.log("Enabling button", this)
+          // console.log("Enabling button", this)
           document
             .querySelector("#advance-buttons button:first-child")
             .disabled = false
@@ -113,7 +120,7 @@ viewof storyStep = Inputs.button(
 ```{ojs}
 //| label: map
 
-Plot.plot({
+antarcticMap = Plot.plot({
   // projection: "equal-earth",
   // projection: {type: "orthographic", rotate: [0, -30, 20]},
   projection: ({width, height}) => d3.geoAzimuthalEquidistant()
@@ -158,54 +165,81 @@ Plot.plot({
       fontFamily: "Roboto Condensed",
       fontStyle: "italic"
     }),
-    storyStep >= 1 ? Plot.geo(landIceOutline, {
-      fill: "url(#stripes)",
-      stroke: "#333333",
-      strokeWidth: 1,
-      fillOpacity: 0.75,
-      render: fadeLayerIn
-    }) : null,
-    // Plot.graticule()
-    storyStep == 2 ? Plot.arrow(labelShelves, {
-      x1: "xfrom",
-      y1: "yfrom",
-      x2: "xto",
-      y2: "yto",
-      bend: true,
-      stroke: "navy",
-      strokeWidth: 3,
-      render: fadeLayerIn
-    }) : null,
-    storyStep == 2 ? Plot.text(labelShelves,
-      {
-        text: d => d.t.toUpperCase(),
-        x: "xfrom",
-        y: d => d.yfrom + 2.5, // shift labels outward, not up/down
-        stroke: "lightcyan",
-        fill: "navy",
-        strokeWidth: 4,
-        fontSize: 24,
-        fontFamily: "Roboto Condensed",
-        fontWeight: "bold",
-        lineWidth: 15,
-        // dx: 35,
-        // dy: 30,
-        render: fadeLayerIn
-      }) : null,
-    storyStep >= 3 ? Plot.geo(seaIceOutline, {
-      // fill: "url(#stripes)",
-      stroke: "#333333",
-      opacity: d => {
-        let dNum = parseInt(d.properties.month)
-        return dNum => (dNum + 12 - currentMonth) % 12
-      },
-      strokeWidth: 1,
-      // fillOpacity: 0.75,
-      render: fadeLayerIn
-    }) : null,
+    /* there's some complexity here with duplicate layers as the render
+       transform is a bit tough to work with and i don't want layers
+       blinking on and off twice a second */
+    storyStep == 1 || storyStep == 2 ? landIceOutlineLayerWithFade : null,
+    storyStep == 2 ? iceShelfArrowLayerWithFade : null,
+    storyStep == 2 ? iceShelfLabelLayerWithFade : null,
+    storyStep == 3 ? seaIceRegionLayer : null,
+    storyStep == 3 ? landIceOutlineLayer : null,
+    storyStep == 3 ? seaIceLabelLayer : null,
   ],
   height: 800,
   insetTop: 0
+})
+```
+
+```{ojs}
+//| label: layer-defs
+landIceOutlineLayerWithFade = Plot.geo(landIceOutline, {
+  fill: "url(#stripes)",
+  stroke: "#333333",
+  strokeWidth: 1,
+  fillOpacity: 0.75,
+  render: fadeLayerIn
+})
+landIceOutlineLayer = Plot.geo(landIceOutline, {
+  fill: "url(#stripes)",
+  stroke: "#333333",
+  strokeWidth: 1,
+  fillOpacity: 0.75,
+})
+iceShelfArrowLayerWithFade = Plot.arrow(labelShelves, {
+  x1: "xfrom",
+  y1: "yfrom",
+  x2: "xto",
+  y2: "yto",
+  bend: true,
+  stroke: "navy",
+  strokeWidth: 3,
+  render: fadeLayerIn
+})
+iceShelfLabelLayerWithFade = Plot.text(labelShelves,
+{
+  text: d => d.t.toUpperCase(),
+  x: "xfrom",
+  y: d => d.yfrom + 2.5, // shift labels outward, not up/down
+  stroke: "lightcyan",
+  fill: "navy",
+  strokeWidth: 4,
+  fontSize: 24,
+  fontFamily: "Roboto Condensed",
+  fontWeight: "bold",
+  lineWidth: 15,
+  render: fadeLayerIn
+})
+seaIceRegionLayer = Plot.geo(currentSeaIceRegion, {
+  fill: "#dddddd",
+  stroke: "#eeeeee",
+  strokeWidth: 1,
+  fillOpacity: 0.35,
+  // render: fadeLayerIn
+})
+seaIceLabelLayer = Plot.text(labelSeaIce,
+{
+  text: d => d.t.toUpperCase(),
+  x: "x",
+  y: "y",
+  textAnchor: "start",
+  stroke: "white",
+  fill: "#666666",
+  strokeWidth: 4,
+  fontSize: 24,
+  fontFamily: "Roboto Condensed",
+  fontWeight: "bold",
+  lineWidth: 20,
+  // render: fadeLayerIn
 })
 ```
 
@@ -220,10 +254,10 @@ labelShelves = [
     yto: -80.399690
   }, {
     t: "Ronne Ice Shelf",
-    xfrom: -40.884332,
-    yfrom: -67.110015,
-    xto: -55.884332,
-    yto: -77.110015
+    xfrom: -43.884332,
+    yfrom: -72.110015,
+    xto: -68.884332,
+    yto: -80.110015
   }
 ]
 
@@ -244,13 +278,29 @@ labelContinents = [
     t: "SOUTH\nAMERICA"
   },
 ]
+months = ["January", "February", "March", "April", "May", "June", "July",
+  "August", "September", "October", "November", "December"]
+labelSeaIce = [
+  {
+    x: -123,
+    y: -55.5,
+    t: `Typical sea ice in ${months[monthTimer]}`
+  }
+]
 ```
 
 ```{ojs}
 //| label: fade-in-out
 // this render transform fades layers in (but not out)
 fadeLayerIn = (i, s, v, d, c, next) => {
+  // index, scales, values, dimensions, context, next
+  console.log("---- RUNNING fadeLayerIn ----")
+  // console.log("values", v)
   const marks = next(i, s, v, d, c)
+  console.log("marks", marks)
+  const svg = c.ownerSVGElement
+  // console.log("Owning SVG:", svg)
+  console.log("---- ---- Running UPDATE ---- ----")
   d3
     .select(marks)
     .style("opacity", 0)
@@ -264,19 +314,13 @@ fadeLayerIn = (i, s, v, d, c, next) => {
 
 ```{ojs}
 //| label: current-month
-
 monthTimer = {
   let i = 0
   yield i
-  while(true) {
-    yield Promises.tick(1000).then(() => i++ % 12)
+  while(storyStep >= 3) {
+    yield Promises.tick(300).then(() => i++ % 12)
   }
 }
-// only run the timer when the sea ice layer is visible to avoid
-// other layers flickering
-currentMonth = storyStep >= 3 ? monthTimer : 1
-
-currentMonth
 ```
 
 ```{ojs}

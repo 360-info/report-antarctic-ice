@@ -188,7 +188,7 @@ header#title-block-header p {
 
 .commentary {
   font-weight: bold;
-  font-size: clamp(1em, 3.5vw, 1.5em);
+  font-size: clamp(0.75em, 3.6vw, 1.2em);
   text-shadow:
     0 0 1px white,
     0 0 2px white,
