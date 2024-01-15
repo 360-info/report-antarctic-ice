@@ -20,12 +20,8 @@ library(isoband)
 library(here)
 ```
 
-# Bedmap2: Antarctic bed and land ice heights
-
-If they aren't already present, we'll download the Bedmap2 topography/bathymetry grids, as well as the NSIC's median 1981-2010 sea ice borders for each month of the year:
-
 ```{r}
-#| label: download-bedmap2
+#| label: fn-download-if-not-present
 download_if_not_present <- function(url, dest_zip, dest_dir,
   temp_timeout = 3600) {
   if (!file.exists(dest_zip)) {
@@ -39,6 +35,14 @@ download_if_not_present <- function(url, dest_zip, dest_dir,
     message("Skipping download of ", basename(url))
   }
 }
+```
+
+# Bedmap2: Antarctic bed and land ice heights
+
+If they aren't already present, we'll download the Bedmap2 topography/bathymetry grids, as well as the NSIC's median 1981-2010 sea ice borders for each month of the year:
+
+```{r}
+#| label: download-bedmap2
 
 # bedmap2:
 # - https://tc.copernicus.org/articles/7/375/2013/tc-7-375-2013.html
@@ -151,7 +155,7 @@ pwalk(nsidc_downloads, download_if_not_present)
 These are pretty tiny, so there's no need to simplify them. Instead, let's reproject them to EPSG:4326 and write them all out as a single GeoJSON:
 
 ```{r}
-#| label: process-nsidc
+#| label: tidy-nsidc
 
 # open all the months' boundaries in a single tibble
 nsidc_downloads |>
@@ -169,10 +173,62 @@ seaice_shapes |>
   unnest(shape) |>
   st_as_sf() ->
 seaice_sf
+```
 
-# write out as geojson
+These boundaries are line strings rather than polygons. We could make convex hulls of the boundaries, but we might miss areas where the sea ice boundaries curves back in toward the pole.
+
+Instead, let's see what concave hulls look like:
+
+```{r}
+#| label: seaice-hulls
+
+seaice_sf |>
+  st_convex_hull() ->
+seaice_hulls_convex
+
+seaice_sf |>
+  st_concave_hull(0.25, allow_holes = FALSE) ->
+seaice_hulls_concave
+```
+
+```{r}
+#| label: preview-seaice-hulls
+# first the convex
+ggplot() +
+  geom_sf(data = seaice_hulls_convex, fill = "goldenrod") +
+  geom_sf(data = seaice_hulls_concave) +
+  geom_sf(data = seaice_sf) +
+  facet_wrap(vars(month)) +
+  theme_minimal()
+```
+
+This plot, showing the convex hulls (in yellow) and the concave ones at `ratio = 0.25` (in grey) agains tthe original boundaries, shows the concave hull is small but good improvement for most months.
+
+It isn't working for Feb, though, so let's process that month separately with a higher `ratio` before returning it to the others.
+
+```{r}
+#| label: seaice-hull-feb
+
+seaice_sf |>
+  filter(month == "02") |>
+  st_concave_hull(0.55, allow_holes = FALSE) ->
+seaice_hull_feb
+
+seaice_hulls_concave |>
+  filter(month != "02") |>
+  bind_rows(seaice_hull_feb) ->
+seaice_hulls_final
+```
+
+And finally write both out as GeoJSON (after reprojecting to EPSG 4326):
+
+```{r}
+#| label: write-seaice
 seaice_sf |>
   st_transform(st_crs(4326)) |>
   write_sf(here("data", "nsidc", "seaice_median.geojson"), delete_dsn = TRUE)
 
+seaice_hulls_final |>
+  st_transform(st_crs(4326)) |>
+  write_sf(here("data", "nsidc", "seaice_median_hulls.geojson"), delete_dsn = TRUE)
 ```

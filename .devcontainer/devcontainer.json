@@ -4,7 +4,7 @@
 {
 	"name": "R (rocker/r-ver base)",
 	/* set the r version here */
-	"image": "ghcr.io/rocker-org/devcontainer/r-ver:4.2",
+	"image": "ghcr.io/rocker-org/devcontainer/r-ver:4.3",
 	
 	/* set this to a recent cran freeze when you start working on a project
 	 find one at https://packagemanager.posit.co/client/#/repos/2/overview */
@@ -23,17 +23,16 @@
 		/* add apt packages (eg. system requirements for r packages) here.
 		   note that they are not frozen */
 		"ghcr.io/rocker-org/devcontainer-features/apt-packages:1": {
-			"packages": "libudunits2-dev,libxtst6,libxt6,libmagick++-dev,librsvg2-dev,libgdal-dev,gdal-bin,libgeos-dev,libproj-dev,libsqlite0-dev"
+			"packages": "cmake,libudunits2-dev,libxtst6,libxt6,libmagick++-dev,librsvg2-dev,libgdal-dev,gdal-bin,libproj-dev,libsqlite0-dev"
 		},
 		/* add additional r packages here */
 		"ghcr.io/rocker-org/devcontainer-features/r-packages:1": {
 			"packages": "github::rstudio/renv,tidyverse,here,httpgd,janitor,github::360-info/themes360info,sf,terra"
 		}
-	}
+	},
 
-	/* Use 'postCreateCommand' to run commands after the container is created
-	  (for example, copy some extra fonts to /usr/local/share/fonts) */
-	// "postCreateCommand": "",
+	// build + install a newer version of GEOS from source, then {sf}
+	"postCreateCommand": "sudo ./build-geos.sh"
 
 	/* Use 'forwardPorts' to make a list of ports inside the container available
 	   locally. */
