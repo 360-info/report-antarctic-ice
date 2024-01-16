@@ -2,8 +2,8 @@ project:
   type: website
   output-dir: out
   render:
-    - "analysis/*"
-    - "*.qmd"
+    - "analysis/topography/index.qmd"
+    - "antarctic-map/index.qmd"
   resources:
     - "/data/bedmap2/*.tif"
     - "/data/bedmap2/*.geojson"

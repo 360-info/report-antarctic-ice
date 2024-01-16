@@ -24,3 +24,4 @@ Thumbs.db
 /data/bedmap2.zip
 /data/nsidc/*/
 /data/nsidc/*.zip
+!/data/nsidc/glaciers/

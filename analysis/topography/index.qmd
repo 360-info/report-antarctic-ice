@@ -232,3 +232,23 @@ seaice_hulls_final |>
   st_transform(st_crs(4326)) |>
   write_sf(here("data", "nsidc", "seaice_median_hulls.geojson"), delete_dsn = TRUE)
 ```
+
+# NSIDC: glaciers
+
+The NSIDC's GLIMS dataset tracks glaciers. This time I've pre-downloaded the source point data and version controlled it; we'll crop it and re-export it as a CSV here.
+
+```{r}
+#| label: tidy-glims
+
+here("data", "nsidc", "glaciers", "glims_points.shp") |>
+  read_sf() |>
+  # extract lat/lon for filtering (much easier than st_crop!)
+  mutate(
+    latlon = st_coordinates(geometry),
+    lat = latlon[, "Y"],
+    lon = latlon[, "X"]) |>
+  filter(lat < -60) |>
+  st_drop_geometry() |>
+  select(-latlon) |>
+  write_csv(here("data", "nsidc", "glaciers-antarctica.csv"))
+```
