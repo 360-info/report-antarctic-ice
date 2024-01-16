@@ -78,7 +78,7 @@ comments = [
     md`The massive ice sheet isn’t still—it very slowly flows into the sea in rivers called glaciers.<br><br>NASA says that melting of the ice sheets has contributed to one third of the sea rise we've seen since 1993.`,
     md`Most of the melt currently comes from areas where part of the ice sheet sits over the ocean, as a bookshelf hangs onto a wall.<br><br>This is called an ice shelf. Ice shelves often act as plugs, holding glaciers in.`,
     md`Ross Ice Shelf and Ronne Ice Shelf are two of the biggest, but smaller ones hang all around the edge of Antarctica.`,
-    md`Modelling has found that glacial ice flowing into the Amundsen Sea is vulnerable to warming, and that its melt could destabilise larger areas.<br><br> Thwaites glacier alone could eventually raise sea levels by 65cm if the ice shelf holding it back collapses.`,
+    md`Modelling has found that glacial ice flowing into the Amundsen Sea is vulnerable to warming, and that its melt could destabilise larger areas.<br><br> Thwaites Glacier alone could eventually raise sea levels by 65cm if the ice shelf holding it back collapses.`,
     md`Thinner ice also forms on the waters surrounding Antarctica. This sea ice grows in the winter and shrinks in the summer.`,
     md`Although the sea ice covers a large area, it does not directly influence sea rise, as it already rests on the water.<br><br>But the sea ice does protect the ice sheet from being battered by the ocean and winds.`,
     md`The sea ice was stable until 2016, when it started shrinking.<br><br>Scientists want to understand this sudden reversal before the sea ice melts further and exposes more of the ice sheet.`
@@ -168,7 +168,7 @@ antarcticMap = Plot.plot({
       text: "t",
       x: "x",
       y: "y",
-      fill: "lightgrey",
+      fill: "#00000033",
       lineWidth: 12,
       fontSize: 18,
       fontFamily: "Roboto Condensed",
@@ -328,7 +328,7 @@ labelShelves = [
 
 labelThwaites = [
   { 
-    t: "Thwaites glacier & ice shelf",
+    t: "Thwaites Glacier & Ice Shelf",
     xfrom: -123.75,
     yfrom: -73,
     xto: -106.75,
@@ -351,6 +351,11 @@ labelContinents = [
     x: -45,
     y: -52.5,
     t: "SOUTH\nAMERICA"
+  },
+  {
+    x: -112,
+    y: -68.5,
+    t: "AMUNDSEN\nSEA"
   },
 ]
 months = ["January", "February", "March", "April", "May", "June", "July",
