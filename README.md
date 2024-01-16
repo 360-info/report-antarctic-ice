@@ -2,7 +2,7 @@
 
 # Antarctic sea ice map
 
-### [📋 Add graphic to your story](https://antarcticamap.360visuals.org/antarctic-map) • [📊 Get the data](data) • [💻 Reproduce the analysis](#-reproduce-the-analysis)
+### [📋 Add graphic to your story](https://antarcticamap.360visuals.org/antarctic-map?edshare) • [📊 Get the data](data) • [💻 Reproduce the analysis](#-reproduce-the-analysis)
 
 Visualises the complex layers of ice that make up Antarctica.
 
@@ -19,10 +19,16 @@ commercial reuse and derivates.
 
 Data in these charts comes from:
 
-[Bedmap2](https://tc.copernicus.org/articles/7/375/2013/tc-7-375-2013.html)
-project ([Fretwell et
-al. 2013](https://doi.org/10.5194/tc-7-375-2013))<br><br>[National Sea
-and Ice Data Center](https://nsidc.org)
+<ul>  
+<li>  
+<a href="https://tc.copernicus.org/articles/7/375/2013/tc-7-375-2013.html">Bedmap2</a>
+project (<a href="https://doi.org/10.5194/tc-7-375-2013">Fretwell et
+al. 2013</a>)  
+</li>  
+<li>  
+<a href="https://nsidc.org">National Sea and Ice Data Center</a>  
+</li>  
+</ul>
 
 **Please attribute 360info and the data sources when you use and remix
 these visualisations.**

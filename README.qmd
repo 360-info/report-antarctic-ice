@@ -6,11 +6,13 @@ format: gfm
   repo: report-antarctic-ice
   share-url: https://antarcticamap.360visuals.org/antarctic-map
   data-sources: |
-    * [Bedmap2](https://tc.copernicus.org/articles/7/375/2013/tc-7-375-2013.html) project ([Fretwell et al. 2013](https://doi.org/10.5194/tc-7-375-2013))<br><br>
-    * [National Sea and Ice Data Center](https://nsidc.org)
+    <ul>
+      <li><a href="https://tc.copernicus.org/articles/7/375/2013/tc-7-375-2013.html">Bedmap2</a> project (<a href="https://doi.org/10.5194/tc-7-375-2013">Fretwell et al. 2013</a>)</li>
+      <li><a href="https://nsidc.org">National Sea and Ice Data Center</a></li>
+    </ul>
 ---
 # {{< meta 360readme.title >}}
-### [📋&nbsp;Add&nbsp;graphic&nbsp;to&nbsp;your&nbsp;story]({{< meta 360readme.share-url >}}) • [📊&nbsp;Get&nbsp;the&nbsp;data](data) • [💻&nbsp;Reproduce&nbsp;the&nbsp;analysis](#-reproduce-the-analysis)
+### [📋&nbsp;Add&nbsp;graphic&nbsp;to&nbsp;your&nbsp;story]({{< meta 360readme.share-url >}}?edshare) • [📊&nbsp;Get&nbsp;the&nbsp;data](data) • [💻&nbsp;Reproduce&nbsp;the&nbsp;analysis](#-reproduce-the-analysis)
 
 {{< meta 360readme.summary >}}
 
