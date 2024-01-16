@@ -114,7 +114,7 @@ Data: {{< meta 360embed.data-source >}}
 
         // copy the embed code to the clipboard
         navigator.clipboard.writeText(
-          `<div style="aspect-ratio: {{< meta 360embed.aspect-ratio >}}; width: 100%; min-height: {{< meta 360embed.min-height >}};"><iframe  allow="fullscreen; clipboard-write self https://bushfire-seasons.360visuals.org" allowfullscreen="true" src="{{< meta 360embed.domain >}}{{< meta 360embed.path >}}${fragmentString}" title="{{< meta 360embed.title >}}"  style="width:100%; height:100%; position: relative; top: 0; left: 0; border:none; background-color: {{< meta 360embed.bg-colour >}};" scrolling="no"></iframe></div>`);
+          `<div style="aspect-ratio: {{< meta 360embed.aspect-ratio >}}; width: 100%; min-height: {{< meta 360embed.min-height >}};  max-height: {{< meta 360embed.max-height >}};"><iframe  allow="fullscreen; clipboard-write self https://bushfire-seasons.360visuals.org" allowfullscreen="true" src="{{< meta 360embed.domain >}}{{< meta 360embed.path >}}${fragmentString}" title="{{< meta 360embed.title >}}"  style="width:100%; height:100%; position: relative; top: 0; left: 0; border:none; background-color: {{< meta 360embed.bg-colour >}};" scrolling="no"></iframe></div>`);
 
         // update button styles and content
         edshareBtn.classList.remove("ready");

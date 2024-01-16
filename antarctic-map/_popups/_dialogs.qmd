@@ -28,9 +28,9 @@ Copy and paste the following code:
 
 ::: {.embedcode}
 ```html
-<div style="aspect-ratio: {{< meta 360embed.aspect-ratio >}}; width: 100%; min-height: {{< meta 360embed.min-height >}};">
+<div style="aspect-ratio: {{< meta 360embed.aspect-ratio >}}; width: 100%; min-height: {{< meta 360embed.min-height >}}; max-height: {{< meta 360embed.max-height >}};">
   <iframe
-    allow="fullscreen; clipboard-write self https://bushfire-seasons.360visuals.org"
+    allow="fullscreen; clipboard-write self {{< meta 360embed.domain >}}"
     allowfullscreen="true"
     src="{{< meta 360embed.domain >}}{{< meta 360embed.path >}}"
     title="{{< meta 360embed.title >}}"

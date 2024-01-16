@@ -1,17 +1,14 @@
 ---
-# omit title and subtitle if you're doing a custom title block
-# title: Untitled
-# subtitle: A thing here
 # for social previews
-pagetitle: Untitled
-description: A description for social previews
+pagetitle: "Interactive: exploring Antarctica's ice"
+description: There's more to Antarctica than the ice you see on the maps.
 twitter-card:
   site: "@360info_global"
-  image: "/folder/example.png"
+  image: "/antarctic-map/antarcticmap-banner.png"
 open-graph:
-  image: "/folder/example.png"
+  image: "/antarctic-map/antarcticmap-banner.png"
 resources:
-  - example.png
+  - "/antarctic-map/antarcticmap-banner.png"
 format:
   360-embed-html: default
 # metadata for modals and embed sharing functionality
@@ -19,15 +16,18 @@ format:
   byline: "James Goldie, 360info"
   data-source: "Bedmap2, NSIDC"
   type: map
-  aspect-ratio: 20 / 19
+  aspect-ratio: 13 / 20
   min-height: 500px
+  max-height: 893px
   bg-colour: white
-  title: "Interactive: title"
-  domain: https://example.360visuals.org
-  fragments: state, month
-  path: /map/
+  title: "Interactive: exploring Antarctica's ice"
+  domain: https://antarcticamap.360visuals.org
+  path: /antarctic-map/
   about: |
-    Here's a place to **tell people** and [link to things](https://example.com)!
+    Data underpinning this map of Antarctica comes from three sources.<br><br>
+    The map of the bedrock elevation and the land ice boundaries comes from the [Bedmap2](https://tc.copernicus.org/articles/7/375/2013/tc-7-375-2013.html) project ([Fretwell et al. 2013](https://doi.org/10.5194/tc-7-375-2013)).<br><br>
+    Data on the typical sea ice borders over the year for the 1981-2010 period come from the [National Sea and Ice Data Center](https://nsidc.org)’s [Sea Ice Index](https://nsidc.org/data/g02135/versions/3).<br><br>
+    The locations of Antarctic glaciers come from the NSIDC’s [GLIMS Glacier Database](https://nsidc.org/data/nsidc-0272/versions/1).
 ---
 
 {{< include _popups/_buttons.qmd >}}
@@ -54,6 +54,7 @@ async function fixedGeoJSON(x) {
 bedHeights = FA("/data/bedmap2/bedmap2_bed_heights.geojson").json()
 landIceOutline = fixedGeoJSON("/data/bedmap2/bedmap2_surface_outline.geojson")
 // seaIceOutline = fixedGeoJSON("/data/nsidc/seaice_median.geojson")
+glacierPoints = FA("/data/nsidc/glaciers-antarctica.csv").csv()
 seaIceRegions = FA("/data/nsidc/seaice_median_hulls.geojson").json()
 
 // filter the sea ice regions on a timer
@@ -71,9 +72,14 @@ currentSeaIceRegion = ({
 //| classes: commentary
 comments = [
     md`When you think of Antarctica, you probably think of its ice. But underneath is a continent, with rock rising above sea level.`,
-    md`A sheet of ice sits over nearly all of the land — kilometres thick in many places.`,
-    md`In some places, the ice also hangs over shallow waters, as a bookshelf hangs onto a wall. This is called an ice shelf.<br><br>Ross Ice Shelf and Ronne Ice Shelf are two of the biggest, but smaller ice shelves hang all around the edge of Antarctica.`,
-    md`Separate to this, ice also forms on the waters surrounding Antarctica. This sea ice grows in the winter and shrinks in the summer.`,
+    md`A sheet of ice sits over nearly all of the land, as well as some of the shallow waters — kilometres thick in many places.`,
+    md`The massive ice sheet isn’t still—it very slowly flows into the sea in rivers called glaciers.<br><br>NASA says that melting of the ice sheets has contributed to one third of the sea rise we've seen since 1993.`,
+    md`Most of the melt currently comes from areas where part of the ice sheet sits over the ocean, as a bookshelf hangs onto a wall.<br><br>This is called an ice shelf. Ice shelves often act as plugs, holding glaciers in.`,
+    md`Ross Ice Shelf and Ronne Ice Shelf are two of the biggest, but smaller ones hang all around the edge of Antarctica.`,
+    md`Modelling has found that glacial ice flowing into the Amundsen Sea is vulnerable to warming, and that its melt could destabilise larger areas.<br><br> Thwaites glacier alone could eventually raise sea levels by 65cm if the ice shelf holding it back collapses.`,
+    md`Thinner ice also forms on the waters surrounding Antarctica. This sea ice grows in the winter and shrinks in the summer.`,
+    md`Although the sea ice covers a large area, it does not directly influence sea rise, as it already rests on the water.<br><br>But the sea ice does protect the ice sheet from being battered by the ocean and winds.`,
+    md`The sea ice was stable until 2016, when it started shrinking.<br><br>Scientists want to understand this sudden reversal before the sea ice melts further and exposes more of the ice sheet.`
 ]
 comments[storyStep]
 ```
@@ -153,9 +159,10 @@ antarcticMap = Plot.plot({
       fill: d => d.properties.hi / 1000,
       fillOpacity: 0.75,
       stroke: null,
-      ariaDescription: "A map showing the elevation (or depth, where it is below sea level) of the bedrock of Antarctica. Parts of the bedrock are over two kilometres above sea level. The areas above sea level are smaller than the typical depiction of Antarctica in maps. This is because thick ice sits over the land, as well as hanging over some shallow waters as ice shelves."
+      ariaDescription: "A map showing the elevation (or depth, where it is below sea level) of the bedrock of Antarctica. Parts of the bedrock are over two kilometres above sea level."
     }),
     Plot.text(labelContinents, {
+      ariaHidden: "true",
       text: "t",
       x: "x",
       y: "y",
@@ -165,15 +172,19 @@ antarcticMap = Plot.plot({
       fontFamily: "Roboto Condensed",
       fontStyle: "italic"
     }),
-    /* there's some complexity here with duplicate layers as the render
-       transform is a bit tough to work with and i don't want layers
-       blinking on and off twice a second */
-    storyStep == 1 || storyStep == 2 ? landIceOutlineLayerWithFade : null,
-    storyStep == 2 ? iceShelfArrowLayerWithFade : null,
-    storyStep == 2 ? iceShelfLabelLayerWithFade : null,
-    storyStep == 3 ? seaIceRegionLayer : null,
-    storyStep == 3 ? landIceOutlineLayer : null,
-    storyStep == 3 ? seaIceLabelLayer : null,
+    /* there's some complexity here with duplicate layers as the layers that
+       fade in can't be displayed at the same time as the ones that animate
+       on the timer (render transform limitation) */
+    storyStep >= 1 && storyStep <= 5 ? landIceOutlineLayerWithFade : null,
+    storyStep == 2 ? glacierPointLayerWithFade : null,
+    storyStep == 3 || storyStep == 4 ? iceShelfArrowLayerWithFade : null,
+    storyStep == 3 || storyStep == 4 ? iceShelfLabelLayerWithFade : null,
+    storyStep == 5 ? thwaitesGlacierPointLayerWithFade : null,
+    storyStep == 5 ? thwaitesGlacierArrowLayerWithFade : null,
+    storyStep == 5 ? thwaitesGlacierLabelLayerWithFade : null,
+    storyStep >= 6 ? seaIceRegionLayer : null,
+    storyStep >= 6 ? landIceOutlineLayer : null,
+    storyStep >= 6 ? seaIceLabelLayer : null,
   ],
   height: 800,
   insetTop: 0
@@ -187,13 +198,15 @@ landIceOutlineLayerWithFade = Plot.geo(landIceOutline, {
   stroke: "#333333",
   strokeWidth: 1,
   fillOpacity: 0.75,
-  render: fadeLayerIn
+  render: fadeLayerIn,
+  ariaDescription: "An outline of the parts of Antarctica covered with ice. This is typically the outline you see on maps."
 })
 landIceOutlineLayer = Plot.geo(landIceOutline, {
   fill: "url(#stripes)",
   stroke: "#333333",
   strokeWidth: 1,
   fillOpacity: 0.75,
+  ariaHidden: true
 })
 iceShelfArrowLayerWithFade = Plot.arrow(labelShelves, {
   x1: "xfrom",
@@ -203,10 +216,10 @@ iceShelfArrowLayerWithFade = Plot.arrow(labelShelves, {
   bend: true,
   stroke: "navy",
   strokeWidth: 3,
-  render: fadeLayerIn
+  render: fadeLayerIn,
+  aria: true
 })
-iceShelfLabelLayerWithFade = Plot.text(labelShelves,
-{
+iceShelfLabelLayerWithFade = Plot.text(labelShelves, {
   text: d => d.t.toUpperCase(),
   x: "xfrom",
   y: d => d.yfrom + 2.5, // shift labels outward, not up/down
@@ -217,14 +230,64 @@ iceShelfLabelLayerWithFade = Plot.text(labelShelves,
   fontFamily: "Roboto Condensed",
   fontWeight: "bold",
   lineWidth: 15,
-  render: fadeLayerIn
+  render: fadeLayerIn,
+  ariaLabel: d => d.t
+})
+glacierPointLayerWithFade = Plot.dot(glacierPoints, {
+  x: "lon",
+  y: "lat",
+  r: 2.5,
+  // opacity: 0.75,
+  fill: "red",
+  stroke: "#00000099",
+  strokeWidth: 0.5,
+  render: fadeLayerIn,
+  ariaDescription: "Points around the edges of Antarctic marking glaciers: slow-moving rivers of ice."
+})
+thwaitesGlacierPointLayerWithFade = Plot.dot(
+  [{ lon: -106.75, lat: -75.5 }], {
+  x: "lon",
+  y: "lat",
+  r: 4.5,
+  fill: "navy",
+  stroke: "lightcyan",
+  strokeWidth: 0.5,
+  symbol: "triangle",
+  render: fadeLayerIn,
+  ariaHidden: true
+})
+thwaitesGlacierArrowLayerWithFade = Plot.arrow(labelThwaites, {
+  x1: "xfrom",
+  y1: "yfrom",
+  x2: d => d.xto - 3.5,
+  y2: "yto",
+  bend: true,
+  stroke: "navy",
+  strokeWidth: 3,
+  render: fadeLayerIn,
+  ariaLabel: d => d.t
+})
+thwaitesGlacierLabelLayerWithFade = Plot.text(labelThwaites, {
+  text: d => d.t.toUpperCase(),
+  x: d => d.xfrom - 2.5,
+  y: "yfrom", // shift labels outward, not up/down
+  textAnchor: "end",
+  stroke: "lightcyan",
+  fill: "navy",
+  strokeWidth: 4,
+  fontSize: 18,
+  fontFamily: "Roboto Condensed",
+  fontWeight: "bold",
+  lineWidth: 10,
+  render: fadeLayerIn,
+  ariaHidden: true
 })
 seaIceRegionLayer = Plot.geo(currentSeaIceRegion, {
   fill: "#dddddd",
   stroke: "#eeeeee",
   strokeWidth: 1,
-  fillOpacity: 0.35,
-  // render: fadeLayerIn
+  fillOpacity: 0.65,
+  ariaHidden: true
 })
 seaIceLabelLayer = Plot.text(labelSeaIce,
 {
@@ -239,7 +302,7 @@ seaIceLabelLayer = Plot.text(labelSeaIce,
   fontFamily: "Roboto Condensed",
   fontWeight: "bold",
   lineWidth: 20,
-  // render: fadeLayerIn
+  ariaLabel: d => d.t
 })
 ```
 
@@ -258,6 +321,16 @@ labelShelves = [
     yfrom: -72.110015,
     xto: -68.884332,
     yto: -80.110015
+  }
+]
+
+labelThwaites = [
+  { 
+    t: "Thwaites glacier & ice shelf",
+    xfrom: -123.75,
+    yfrom: -73,
+    xto: -106.75,
+    yto: -75.5
   }
 ]
 
@@ -294,13 +367,11 @@ labelSeaIce = [
 // this render transform fades layers in (but not out)
 fadeLayerIn = (i, s, v, d, c, next) => {
   // index, scales, values, dimensions, context, next
-  console.log("---- RUNNING fadeLayerIn ----")
   // console.log("values", v)
   const marks = next(i, s, v, d, c)
   console.log("marks", marks)
   const svg = c.ownerSVGElement
   // console.log("Owning SVG:", svg)
-  console.log("---- ---- Running UPDATE ---- ----")
   d3
     .select(marks)
     .style("opacity", 0)
@@ -317,8 +388,8 @@ fadeLayerIn = (i, s, v, d, c, next) => {
 monthTimer = {
   let i = 0
   yield i
-  while(storyStep >= 3) {
-    yield Promises.tick(300).then(() => i++ % 12)
+  while(storyStep >= 6) {
+    yield Promises.tick(250).then(() => i++ % 12)
   }
 }
 ```
