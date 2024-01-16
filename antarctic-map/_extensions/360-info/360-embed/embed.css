@@ -180,8 +180,10 @@ header#title-block-header p {
 /* commentary + buttons */
 .header-block {
   position: absolute;
+  width: calc(100vw - 60px);
   display: flex;
   flex-flow: row nowrap;
+  justify-content: space-between;
   padding: 10px 20px;
   gap: 20px;
 }
