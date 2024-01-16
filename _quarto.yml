@@ -2,6 +2,7 @@ project:
   type: website
   output-dir: out
   render:
+    - "README.qmd"
     - "analysis/topography/index.qmd"
     - "antarctic-map/index.qmd"
   resources:

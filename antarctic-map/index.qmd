@@ -21,8 +21,10 @@ format:
   max-height: 893px
   bg-colour: white
   title: "Interactive: exploring Antarctica's ice"
+  repo: report-antarctic-ice
   domain: https://antarcticamap.360visuals.org
   path: /antarctic-map/
+  fragments: 
   about: |
     Data underpinning this map of Antarctica comes from three sources.<br><br>
     The map of the bedrock elevation and the land ice boundaries comes from the [Bedmap2](https://tc.copernicus.org/articles/7/375/2013/tc-7-375-2013.html) project ([Fretwell et al. 2013](https://doi.org/10.5194/tc-7-375-2013)).<br><br>
@@ -45,7 +47,7 @@ FA = FileAttachment
 async function fixedGeoJSON(x) {
   const raw = await FA(x).json()
   raw.features = raw.features.map(function(f) {
-    return turf.rewind(f, { reverse:true });
+    return turf.rewind(f, { reverse: true });
   })
   return raw
 }
